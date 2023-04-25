@@ -2,17 +2,28 @@ const form = document.querySelector('form');
 const input = document.querySelector('input[type="text"]');
 const ul = document.querySelector('ul');
 const noTasksMessage = document.querySelector('#no-tasks-message');
+let isEditing = false;
 
-document.addEventListener('keydown', () => {
+function startEditing() {
+  isEditing = true;
+  document.removeEventListener('keydown', focusInput);
+}
+
+function stopEditing() {
+  isEditing = false;
+  document.addEventListener('keydown', focusInput);
+}
+
+function focusInput() {
   input.focus();
-});
+}
 
 form.addEventListener('submit', (e) => {
   e.preventDefault();
   if (input.value.trim() !== '') {
     const li = document.createElement('li');
     const label = document.createElement('label');
-    const bulletPoint = document.createElement('span');
+    const bulletPoint = document.createElement('label');
     bulletPoint.textContent = `${ul.children.length + 1}. `;
     const span = document.createElement('span');
     span.textContent = input.value;
@@ -37,6 +48,7 @@ function checkNoTasks() {
   }
 }
 
+
 ul.addEventListener('click', (e) => {
   if (e.target.tagName === 'BUTTON') {
     const li = e.target.parentNode;
@@ -51,14 +63,19 @@ ul.addEventListener('click', (e) => {
       input.value = span.textContent;
       label.replaceChild(input, span);
       e.target.textContent = 'Save';
+      startEditing();
+      input.addEventListener('blur', stopEditing);
     } else if (e.target.textContent === 'Save') {
       const label = li.querySelector('label');
       const input = label.querySelector('input[type="text"]');
       const span = document.createElement('span');
+      span.classList.add('task-text');
       span.textContent = input.value;
       label.replaceChild(span, input);
       e.target.textContent = 'Edit';
+      stopEditing();
     }
+    
   } else if (e.target.tagName === 'INPUT') {
     const label = e.target.nextElementSibling;
     if (e.target.checked) {
@@ -70,4 +87,6 @@ ul.addEventListener('click', (e) => {
   checkNoTasks();
 });
 
-checkNoTasks();
+if (!isEditing) {
+  document.addEventListener('keydown', focusInput);
+}
